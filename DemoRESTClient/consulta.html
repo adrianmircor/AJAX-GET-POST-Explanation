@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FRONT JQUERY / BACK SPRING BOOT</title>
+  </head>
+  <body>
+    <div>
+      <h1>CONSULTAR CLIENTES</h1>
+      <input type="button" value="Consultar" id="btnConsultar" />
+    </div>
+    <div id="divRespuesta"></div>
+
+    <hr />
+
+    <form id="clienteForm">
+      <p>
+        Nombre:
+        <input type="text" name="name_nombre" id="id_nombre" size="40" />
+      </p>
+      <p>
+        Apellido Paterno:
+        <input
+          type="text"
+          name="name_apellidoPaterno"
+          id="id_apellidoPaterno"
+          size="40"
+        />
+      </p>
+      <p>
+        Apellido Materno:
+        <input
+          type="text"
+          name="name_apellidoMaterno"
+          id="id_apellidoMaterno"
+          size="40"
+        />
+      </p>
+      <p>Dni: <input type="text" name="name_dni" id="id_dni" size="40" /></p>
+      <p>
+        Ciudad:
+        <input type="text" name="name_ciudad" id="id_ciudad" size="40" />
+      </p>
+      <p>
+        Direccion:
+        <input type="text" name="name_direccion" id="id_direccion" size="40" />
+      </p>
+      <p>
+        Telefono:
+        <input type="text" name="name_telefono" id="id_telefono" size="40" />
+      </p>
+      <p>
+        Email: <input type="text" name="name_email" id="id_email" size="40" />
+      </p>
+      <p>
+        <input type="button" value="Registrar" id="btnRegistrar" />
+      </p>
+    </form>
+
+    <div id="postResultDiv"></div>
+
+    <script src="js/jquery-3.6.0.min.js"></script>
+    <script>
+      $(function () {
+        $("#btnConsultar").click(fnConsultar);
+        $("#btnRegistrar").click(fnRegistrar);
+      });
+
+      function fnConsultar() {
+        $.ajax({
+          type: "GET",
+          url: "http://localhost:8080/api/v1/clientes",
+          dataType: "json",
+          success: function (result, status, xhr) {
+            let mensaje = "";
+            for (let i = 0; i < result.length; i++) {
+              mensaje += result[i].nombre + "<br/>";
+            }
+            $("#divRespuesta").html(mensaje);
+          },
+          error: function (xhr, status, error) {
+            alert(
+              "Result: " +
+                status +
+                " " +
+                error +
+                " " +
+                xhr.status +
+                " " +
+                xhr.statusText
+            );
+          },
+        });
+      }
+
+      function fnRegistrar() {
+        console.log("-><-");
+        var formData = {
+          //Como Cliente.java
+          paterno: $("#id_apellidoPaterno").val(),
+          materno: $("#id_apellidoMaterno").val(),
+          nombre: $("#id_nombre").val(),
+          dni: $("#id_dni").val(),
+          ciudad: $("#id_ciudad").val(),
+          direccion: $("#id_direccion").val(),
+          telefono: $("#id_telefono").val(),
+          email: $("#id_email").val(),
+        };
+
+        // DO POST
+        $.ajax({
+          method: "POST",
+          contentType: "application/json", //Cliente le indica al SV qué tipo de datos está enviando
+          url: "http://localhost:8080/api/v1/clientes",
+          data: JSON.stringify(formData),
+          dataType: "json", //Tipo de datos que el Cliente espera del SV
+          //RESPUESTA del servidor cuando se hace una petición con ÉXITO
+          success: function (result, textStatus, jqXHR) {
+            console.log("result:", result); //Lo que responde en el body, el servidor
+            console.log("textStatus:", textStatus); //success
+            console.log("jqXHR:", jqXHR); //Objeto que posee el Codigo de HTTP de respuesta del SV
+            if (jqXHR.status === 201) {
+              $("#postResultDiv").html(
+                "" + "Se registró con éxito al Cliente!" + "<br/>" + "<p></p>"
+              );
+            } else {
+              $("#postResultDiv").html("<strong>Error</strong>");
+            }
+          },
+          //RESPUESTA del servidor cuando se hace una petición INCORRECTA
+          error: function (jqXHR, textStatus) {
+            //Cuando no cumple, con lo que necesita el servidor, para guardar el registro
+            alert(
+              "Result: " +
+                textStatus + //textStatus = jqXHR.statusText = 'error'
+                " " +
+                jqXHR.status + //Codigo HTTP
+                " " +
+                jqXHR.statusText
+            );
+            console.log("Hubo un error en la petición");
+          },
+        });
+      }
+    </script>
+  </body>
+</html>
